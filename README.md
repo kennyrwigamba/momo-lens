@@ -17,7 +17,7 @@ and trends across transaction types.
 | Name | GitHub |
 |---|---|
 | Ishimwe Rwigamba Kenny Louange | [@TODO](https://github.com/TODO) |
-| Kevin Ishimwe | [@TODO](https://github.com/TODO) |
+| Kevin Ishimwe | [@TODO](https://github.com/kevinishimwe2) |
 | Maunice Akaliza | [@TODO](https://github.com/TODO) |
 
 ## System Architecture
