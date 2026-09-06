@@ -7,7 +7,7 @@
 MoMo Lens is a fullstack application that processes Mobile Money (MoMo) SMS
 transaction data provided in XML format. It cleans and categorizes the raw
 data, loads it into a relational (SQLite) database, and exposes it through a
-frontend dashboard for analysis and visualization — showing volumes, totals,
+frontend dashboard for analysis and visualization; showing volumes, totals,
 and trends across transaction types.
 
 **Pipeline:** XML SMS export → parse → clean/normalize → categorize → load into SQLite → aggregate → visualize on dashboard.
@@ -16,9 +16,9 @@ and trends across transaction types.
 
 | Name | GitHub |
 |---|---|
-| Ishimwe Rwigamba Kenny Louange | [@TODO](https://github.com/TODO) |
-| Kevin Ishimwe | [@TODO](https://github.com/kevinishimwe2) |
-| Maunice Akaliza | [@TODO](https://github.com/TODO) |
+| Ishimwe Rwigamba Kenny Louange | [@kennyrwigamba](https://github.com/kennyrwigamba) |
+| Kevin Ishimwe | [@kevinishimwe2](https://github.com/kevinishimwe2) |
+| Maunice Akaliza | [@Akaliza-ux](https://github.com/Akaliza-ux) |
 
 ## System Architecture
 
