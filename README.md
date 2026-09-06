@@ -23,7 +23,7 @@ and trends across transaction types.
 ## System Architecture
 
 High-level architecture diagram: 
-@Link to the architecture diagram(https://app.diagrams.net/#G1VeovJ0P1I-WPy2vZ1r9kVdFE0xaAaCHP#%7B%22pageId%22%3A%22-w0HEG6bdLZIW8pZsZ7u%22%7D)
+[@Link to the architecture diagram](https://app.diagrams.net/#G1VeovJ0P1I-WPy2vZ1r9kVdFE0xaAaCHP#%7B%22pageId%22%3A%22-w0HEG6bdLZIW8pZsZ7u%22%7D)
 
 <img width="334" height="920" alt="MoMo Analytics architecture" src="https://github.com/user-attachments/assets/ac3c7495-b4e6-4dd2-81a7-3778178275a3" />
 
