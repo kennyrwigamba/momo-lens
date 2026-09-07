@@ -31,7 +31,7 @@ High-level architecture diagram:
 
 ## Scrum Board
 
-Task board (To Do / In Progress / Done): 
+Task board (To Do / In Progress / Done): [MomoLens Project Board](https://github.com/users/kennyrwigamba/projects/2/views/2)
 
 ## Project Structure
 
