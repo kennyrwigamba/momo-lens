@@ -72,3 +72,54 @@ CREATE TABLE system_logs (
 CREATE INDEX idx_users_phone ON users(phone_number);
 CREATE INDEX idx_tx_timestamp ON transactions(tx_timestamp);
 CREATE INDEX idx_cat_code ON transaction_categories(category_code);
+
+-- Sample Data
+-- Users
+INSERT INTO users (user_id, phone_number, full_name, user_type) VALUES
+(1, '250788110381', 'Account Owner', 'INDIVIDUAL'),
+(2, '250791666666', 'Jane Uwera', 'INDIVIDUAL'),
+(3, '250790777777', 'Sam Kalisa', 'INDIVIDUAL'),
+(4, '250788999999', 'Linda Muhoza', 'INDIVIDUAL'),
+(5, '250795963036', 'PayPal PAYMENT LTD', 'MERCHANT');
+
+-- Categories
+INSERT INTO transaction_categories (category_id, category_code, category_name, description) VALUES
+(1, 'P2P_TRANSFER', 'Peer-to-Peer Transfer', 'Transfer between individual mobile money subscribers'),
+(2, 'MERCHANT_PAYMENT', 'Merchant Payment', 'Payments made to merchant codes'),
+(3, 'BANK_DEPOSIT', 'Bank Deposit', 'Funds deposited from bank to mobile wallet'),
+(4, 'AIRTIME_PURCHASE', 'Airtime Purchase', 'Top-up of airtime or data bundles'),
+(5, 'UTILITY_BILL', 'Utility Bill', 'Payments for water, power, or utilities');
+
+-- Transactions
+INSERT INTO transactions (transaction_id, sender_id, receiver_id, amount, currency, fee, balance_after, tx_timestamp, status, raw_sms_body) VALUES
+('76662021700', 2, 1, 20000.00, 'RWF', 0.00, 70000.00, '2026-09-10 09:15:00', 'COMPLETED', 
+ 'You have received 20,000 RWF from Jane Uwera (250791666666). New balance: 70,000 RWF. Financial Transaction Id: 76662021700.'),
+
+('51732411227', 1, 3, 600.00, 'RWF', 20.00, 69380.00, '2026-09-11 11:30:00', 'COMPLETED', 
+ 'TxId: 51732411227. 600 RWF transferred to Sam Kalisa (250790777777). Fee: 20 RWF. New balance: 69,380 RWF.'),
+
+('73214484437', 1, 2, 1000.00, 'RWF', 100.00, 68280.00, '2026-09-12 14:20:00', 'COMPLETED', 
+ 'TxId: 73214484437. 1,000 RWF transferred to Jane Uwera (250791666666). Fee: 100 RWF. New balance: 68,280 RWF.'),
+
+('17818959211', 1, 3, 2000.00, 'RWF', 100.00, 66180.00, '2026-09-13 16:45:00', 'COMPLETED', 
+ 'TxId: 17818959211. 2,000 RWF transferred to Sam Kalisa (250790777777). Fee: 100 RWF. New balance: 66,180 RWF.'),
+
+('13947831685', 1, 5, 25000.00, 'RWF', 250.00, 40930.00, '2026-09-14 10:10:00', 'COMPLETED', 
+ 'TxId: 13947831685. Payment of 25,000 RWF to PayPal PAYMENT LTD completed. Fee: 250 RWF. New balance: 40,930 RWF.');
+
+-- Category Mappings (M:N Demonstration)
+INSERT INTO transaction_category_map (transaction_id, category_id, is_primary) VALUES
+('76662021700', 1, 1),
+('73214484437', 2, 1),
+('51732411227', 2, 1),
+('17818959211', 2, 1),
+('13947831685', 2, 1),
+('13947831685', 5, 0); -- Secondary category showing Many-to-Many
+
+-- System Logs
+INSERT INTO system_logs (process_name, status, records_processed, message) VALUES
+('XML_PARSER', 'SUCCESS', 1691, 'Parsed input XML dataset'),
+('NORMALIZER', 'SUCCESS', 1691, 'Cleaned phone numbers and normalized amounts'),
+('DB_LOADER', 'SUCCESS', 5, 'Sample batch inserted successfully'),
+('SECURITY_CHECK', 'SUCCESS', 5, 'Verified check constraints and balance invariants'),
+('AGGREGATOR', 'SUCCESS', 5, 'Generated daily transaction summary view');
