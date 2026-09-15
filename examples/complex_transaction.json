@@ -1,0 +1,41 @@
+{
+  "transaction_id": "13947831685",
+  "sender": {
+    "user_id": 1,
+    "phone_number": "250788110381",
+    "full_name": "Account Owner",
+    "user_type": "INDIVIDUAL",
+    "created_at": "2026-09-01T08:00:00Z"
+  },
+  "receiver": {
+    "user_id": 5,
+    "phone_number": "250795963036",
+    "full_name": "PayPal PAYMENT LTD",
+    "user_type": "MERCHANT",
+    "created_at": "2026-09-01T08:30:00Z"
+  },
+  "amount": 25000.00,
+  "currency": "RWF",
+  "fee": 250.00,
+  "balance_after": 40930.00,
+  "tx_timestamp": "2026-09-14T10:10:00Z",
+  "status": "COMPLETED",
+  "categories": [
+    {
+      "category_id": 2,
+      "category_code": "MERCHANT_PAYMENT",
+      "category_name": "Merchant Payment",
+      "description": "Payments made to merchant codes",
+      "is_primary": true
+    },
+    {
+      "category_id": 5,
+      "category_code": "UTILITY_BILL",
+      "category_name": "Utility Bill",
+      "description": "Payments for water, power, or utilities",
+      "is_primary": false
+    }
+  ],
+  "raw_sms_body": "TxId: 13947831685. Payment of 25,000 RWF to PayPal PAYMENT LTD completed. Fee: 250 RWF. New balance: 40,930 RWF.",
+  "created_at": "2026-09-14T10:10:05Z"
+}
