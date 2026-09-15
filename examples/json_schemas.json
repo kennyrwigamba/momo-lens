@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MoMo Lens System Schemas",
+  "description": "Standardized JSON Schemas for MoMo Lens entities serialized for RESTful APIs.",
+  "definitions": {
+    "User": {
+      "type": "object",
+      "title": "User",
+      "required": ["user_id", "phone_number", "full_name", "user_type"],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "Unique numeric identifier for the user."
+        },
+        "phone_number": {
+          "type": "string",
+          "pattern": "^[0-9]{10,15}$",
+          "description": "Unique telephone number (e.g. 250788110381)."
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Registered user or business name."
+        },
+        "user_type": {
+          "type": "string",
+          "enum": ["INDIVIDUAL", "MERCHANT", "AGENT", "BANK", "SYSTEM"],
+          "description": "Ecosystem role in mobile money operations."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Registration timestamp."
+        }
+      }
+    },
+    "TransactionCategory": {
+      "type": "object",
+      "title": "TransactionCategory",
+      "required": ["category_id", "category_code", "category_name"],
+      "properties": {
+        "category_id": {
+          "type": "integer",
+          "description": "Unique numeric category identifier."
+        },
+        "category_code": {
+          "type": "string",
+          "enum": ["P2P_TRANSFER", "MERCHANT_PAYMENT", "BANK_DEPOSIT", "AIRTIME_PURCHASE", "UTILITY_BILL"],
+          "description": "Unique classification code."
+        },
+        "category_name": {
+          "type": "string",
+          "description": "Descriptive display title of the category."
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Explanation of classification criteria."
+        },
+        "is_primary": {
+          "type": "boolean",
+          "description": "Indicates if this category is the primary classification for the transaction."
+        }
+      }
+    },
+    "Transaction": {
+      "type": "object",
+      "title": "Transaction",
+      "required": ["transaction_id", "sender", "receiver", "amount", "currency", "fee", "balance_after", "tx_timestamp", "status", "categories"],
+      "properties": {
+        "transaction_id": {
+          "type": "string",
+          "description": "Official financial transaction ID (TxId from SMS)."
+        },
+        "sender": {
+          "$ref": "#/definitions/User",
+          "description": "Nested sender user object."
+        },
+        "receiver": {
+          "$ref": "#/definitions/User",
+          "description": "Nested receiver user object."
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Monetary value transferred."
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3,
+          "default": "RWF",
+          "description": "Three-letter currency code."
+        },
+        "fee": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Network transaction fee applied."
+        },
+        "balance_after": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Account balance immediately following execution."
+        },
+        "tx_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Carrier timestamp when transaction completed."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["COMPLETED", "PENDING", "FAILED", "REVERSED"],
+          "default": "COMPLETED",
+          "description": "Transaction state."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/TransactionCategory"
+          },
+          "description": "Array of categories linked via the junction table."
+        },
+        "raw_sms_body": {
+          "type": ["string", "null"],
+          "description": "Original carrier SMS text for auditability."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Record insertion timestamp."
+        }
+      }
+    },
+    "SystemLog": {
+      "type": "object",
+      "title": "SystemLog",
+      "required": ["log_id", "process_name", "status", "records_processed"],
+      "properties": {
+        "log_id": {
+          "type": "integer",
+          "description": "Unique log entry identifier."
+        },
+        "process_name": {
+          "type": "string",
+          "description": "Service or script name (e.g. XML_PARSER, DB_LOADER)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUCCESS", "WARNING", "ERROR"],
+          "description": "Batch job execution outcome."
+        },
+        "records_processed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of records handled in this batch."
+        },
+        "message": {
+          "type": ["string", "null"],
+          "description": "Descriptive execution logs or error traces."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Log event timestamp."
+        }
+      }
+    }
+  }
+}
