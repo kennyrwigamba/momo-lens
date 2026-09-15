@@ -1,39 +1,39 @@
 -- MoMo Lens Database Setup
 
-CREATE DATABASE momo_lens_db;
+CREATE DATABASE IF NOT EXISTS momo_lens_db;
 USE momo_lens_db;
 
 -- Users Table
 CREATE TABLE users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    phone_number VARCHAR(20) NOT NULL UNIQUE,
-    full_name VARCHAR(100) NOT NULL,
-    user_type ENUM('INDIVIDUAL', 'MERCHANT', 'AGENT', 'BANK', 'SYSTEM') NOT NULL DEFAULT 'INDIVIDUAL',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    user_id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique ID for the user',
+    phone_number VARCHAR(20) NOT NULL UNIQUE COMMENT 'Unique phone number for the user',
+    full_name VARCHAR(100) NOT NULL COMMENT 'Full registered name of the customer/business',
+    user_type ENUM('INDIVIDUAL', 'MERCHANT', 'AGENT', 'BANK', 'SYSTEM') NOT NULL DEFAULT 'INDIVIDUAL' COMMENT 'Role classification in the MoMo ecosystem',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp when user was created'
 );
 
 -- Transaction Categories Table
 CREATE TABLE transaction_categories (
-    category_id INT AUTO_INCREMENT PRIMARY KEY,
-    category_code VARCHAR(30) NOT NULL UNIQUE,
-    category_name VARCHAR(100) NOT NULL,
-    description VARCHAR(255) NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    category_id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique ID for the transaction category',
+    category_code VARCHAR(30) NOT NULL UNIQUE COMMENT 'Short code: P2P_TRANSFER, MERCHANT_PAYMENT, etc.',
+    category_name VARCHAR(100) NOT NULL COMMENT 'Descriptive title of the category',
+    description VARCHAR(255) NULL COMMENT 'Explanation of transaction classification rules',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp when category was added'
 );
 
 -- Transactions Ledger Table
 CREATE TABLE transactions (
-    transaction_id VARCHAR(100) PRIMARY KEY,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
-    amount DECIMAL(12, 2) NOT NULL,
-    currency VARCHAR(3) NOT NULL DEFAULT 'RWF',
-    fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    balance_after DECIMAL(12, 2) NOT NULL,
-    tx_timestamp DATETIME NOT NULL,
-    status ENUM('COMPLETED', 'PENDING', 'FAILED', 'REVERSED') NOT NULL DEFAULT 'COMPLETED',
-    raw_sms_body TEXT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    transaction_id VARCHAR(64) PRIMARY KEY COMMENT 'Official telecom financial transaction ID (e.g. TxId)',
+    sender_id INT NOT NULL COMMENT 'FK to users table (payer/debit account)',
+    receiver_id INT NOT NULL COMMENT 'FK to users table (payee/credit account)',
+    amount DECIMAL(12, 2) NOT NULL COMMENT 'Monetary value transferred',
+    currency VARCHAR(3) NOT NULL DEFAULT 'RWF' COMMENT 'Three-letter currency code',
+    fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT 'Network transaction charge applied',
+    balance_after DECIMAL(12, 2) NOT NULL COMMENT 'Account balance after transaction execution',
+    tx_timestamp DATETIME NOT NULL COMMENT 'Carrier timestamp when transaction completed',
+    status ENUM('COMPLETED', 'PENDING', 'FAILED', 'REVERSED') NOT NULL DEFAULT 'COMPLETED' COMMENT 'Transaction state',
+    raw_sms_body TEXT NULL COMMENT 'Original carrier SMS string for auditability',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record insertion timestamp',
 
     -- Foreign Keys
     CONSTRAINT fk_tx_sender FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -47,11 +47,11 @@ CREATE TABLE transactions (
 
 -- Junction Table (M:N Resolution)
 CREATE TABLE transaction_category_map (
-    map_id INT AUTO_INCREMENT PRIMARY KEY,
-    transaction_id VARCHAR(64) NOT NULL,
-    category_id INT NOT NULL,
-    is_primary TINYINT(1) NOT NULL DEFAULT 1,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    map_id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique ID for the mapping',
+    transaction_id VARCHAR(64) NOT NULL COMMENT 'FK to transactions table',
+    category_id INT NOT NULL COMMENT 'FK to transaction_categories table',
+    is_primary TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = primary category, 0 = secondary tag',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Mapping timestamp',
 
     CONSTRAINT fk_map_tx FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_map_cat FOREIGN KEY (category_id) REFERENCES transaction_categories(category_id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -60,12 +60,12 @@ CREATE TABLE transaction_category_map (
 
 -- System Logs Table
 CREATE TABLE system_logs (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    process_name VARCHAR(50) NOT NULL,
-    status ENUM('SUCCESS', 'WARNING', 'ERROR') NOT NULL,
-    records_processed INT NOT NULL DEFAULT 0,
-    message TEXT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    log_id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique log ID',
+    process_name VARCHAR(50) NOT NULL COMMENT 'Service or script name (e.g. XML_PARSER, DB_LOADER)',
+    status ENUM('SUCCESS', 'WARNING', 'ERROR') NOT NULL COMMENT 'Job execution outcome',
+    records_processed INT NOT NULL DEFAULT 0 COMMENT 'Count of processed records',
+    message TEXT NULL COMMENT 'Descriptive execution logs or error traces',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Log event timestamp'
 );
 
 -- Performance Indexes
@@ -74,7 +74,8 @@ CREATE INDEX idx_tx_timestamp ON transactions(tx_timestamp);
 CREATE INDEX idx_cat_code ON transaction_categories(category_code);
 
 -- Sample Data
--- Users
+
+-- Seed Users
 INSERT INTO users (user_id, phone_number, full_name, user_type) VALUES
 (1, '250788110381', 'Account Owner', 'INDIVIDUAL'),
 (2, '250791666666', 'Jane Uwera', 'INDIVIDUAL'),
@@ -82,7 +83,7 @@ INSERT INTO users (user_id, phone_number, full_name, user_type) VALUES
 (4, '250788999999', 'Linda Muhoza', 'INDIVIDUAL'),
 (5, '250795963036', 'PayPal PAYMENT LTD', 'MERCHANT');
 
--- Categories
+-- Seed Categories
 INSERT INTO transaction_categories (category_id, category_code, category_name, description) VALUES
 (1, 'P2P_TRANSFER', 'Peer-to-Peer Transfer', 'Transfer between individual mobile money subscribers'),
 (2, 'MERCHANT_PAYMENT', 'Merchant Payment', 'Payments made to merchant codes'),
@@ -90,7 +91,7 @@ INSERT INTO transaction_categories (category_id, category_code, category_name, d
 (4, 'AIRTIME_PURCHASE', 'Airtime Purchase', 'Top-up of airtime or data bundles'),
 (5, 'UTILITY_BILL', 'Utility Bill', 'Payments for water, power, or utilities');
 
--- Transactions
+-- Seed Transactions
 INSERT INTO transactions (transaction_id, sender_id, receiver_id, amount, currency, fee, balance_after, tx_timestamp, status, raw_sms_body) VALUES
 ('76662021700', 2, 1, 20000.00, 'RWF', 0.00, 70000.00, '2026-09-10 09:15:00', 'COMPLETED', 
  'You have received 20,000 RWF from Jane Uwera (250791666666). New balance: 70,000 RWF. Financial Transaction Id: 76662021700.'),
@@ -107,16 +108,16 @@ INSERT INTO transactions (transaction_id, sender_id, receiver_id, amount, curren
 ('13947831685', 1, 5, 25000.00, 'RWF', 250.00, 40930.00, '2026-09-14 10:10:00', 'COMPLETED', 
  'TxId: 13947831685. Payment of 25,000 RWF to PayPal PAYMENT LTD completed. Fee: 250 RWF. New balance: 40,930 RWF.');
 
--- Category Mappings (M:N Demonstration)
+-- Seed Category Mappings
 INSERT INTO transaction_category_map (transaction_id, category_id, is_primary) VALUES
 ('76662021700', 1, 1),
 ('73214484437', 2, 1),
 ('51732411227', 2, 1),
 ('17818959211', 2, 1),
 ('13947831685', 2, 1),
-('13947831685', 5, 0); -- Secondary category showing Many-to-Many
+('13947831685', 5, 0);
 
--- System Logs
+-- Seed System Logs
 INSERT INTO system_logs (process_name, status, records_processed, message) VALUES
 ('XML_PARSER', 'SUCCESS', 1691, 'Parsed input XML dataset'),
 ('NORMALIZER', 'SUCCESS', 1691, 'Cleaned phone numbers and normalized amounts'),
