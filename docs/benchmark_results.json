@@ -1,0 +1,230 @@
+{
+  "dataset_size": 1683,
+  "lookups_evaluated": 24,
+  "iterations_per_id": 500,
+  "summary": {
+    "avg_linear_search_time_us": 42.345,
+    "avg_dict_lookup_time_us": 0.071,
+    "overall_speedup_factor": 594.9,
+    "linear_complexity": "O(n)",
+    "dict_complexity": "O(1)"
+  },
+  "results": [
+    {
+      "run": 1,
+      "target_id": "76662021700",
+      "position": "Early (index 0)",
+      "exists": true,
+      "linear_time_us": 0.281,
+      "dict_time_us": 0.072,
+      "speedup_x": 3.9
+    },
+    {
+      "run": 2,
+      "target_id": "26614842768",
+      "position": "Early (index 10)",
+      "exists": true,
+      "linear_time_us": 0.481,
+      "dict_time_us": 0.064,
+      "speedup_x": 7.5
+    },
+    {
+      "run": 3,
+      "target_id": "98755359894",
+      "position": "Early (index 25)",
+      "exists": true,
+      "linear_time_us": 1.117,
+      "dict_time_us": 0.062,
+      "speedup_x": 18.1
+    },
+    {
+      "run": 4,
+      "target_id": "sms_51",
+      "position": "Early (index 50)",
+      "exists": true,
+      "linear_time_us": 2.196,
+      "dict_time_us": 0.061,
+      "speedup_x": 36.1
+    },
+    {
+      "run": 5,
+      "target_id": "sms_107",
+      "position": "Early (index 100)",
+      "exists": true,
+      "linear_time_us": 3.546,
+      "dict_time_us": 0.061,
+      "speedup_x": 58.5
+    },
+    {
+      "run": 6,
+      "target_id": "sms_157",
+      "position": "Early (index 150)",
+      "exists": true,
+      "linear_time_us": 5.762,
+      "dict_time_us": 0.063,
+      "speedup_x": 92.0
+    },
+    {
+      "run": 7,
+      "target_id": "60128198918",
+      "position": "Middle (index 300)",
+      "exists": true,
+      "linear_time_us": 23.179,
+      "dict_time_us": 0.14,
+      "speedup_x": 165.8
+    },
+    {
+      "run": 8,
+      "target_id": "46934619518",
+      "position": "Middle (index 500)",
+      "exists": true,
+      "linear_time_us": 25.321,
+      "dict_time_us": 0.069,
+      "speedup_x": 369.1
+    },
+    {
+      "run": 9,
+      "target_id": "sms_709",
+      "position": "Middle (index 700)",
+      "exists": true,
+      "linear_time_us": 31.433,
+      "dict_time_us": 0.068,
+      "speedup_x": 462.3
+    },
+    {
+      "run": 10,
+      "target_id": "sms_859",
+      "position": "Middle (index 850)",
+      "exists": true,
+      "linear_time_us": 38.527,
+      "dict_time_us": 0.066,
+      "speedup_x": 585.5
+    },
+    {
+      "run": 11,
+      "target_id": "16016087305",
+      "position": "Middle (index 1000)",
+      "exists": true,
+      "linear_time_us": 43.409,
+      "dict_time_us": 0.062,
+      "speedup_x": 700.1
+    },
+    {
+      "run": 12,
+      "target_id": "93824792341",
+      "position": "Middle (index 1150)",
+      "exists": true,
+      "linear_time_us": 50.383,
+      "dict_time_us": 0.067,
+      "speedup_x": 749.7
+    },
+    {
+      "run": 13,
+      "target_id": "sms_1309",
+      "position": "Late (index 1300)",
+      "exists": true,
+      "linear_time_us": 48.521,
+      "dict_time_us": 0.063,
+      "speedup_x": 775.1
+    },
+    {
+      "run": 14,
+      "target_id": "17140081149",
+      "position": "Late (index 1400)",
+      "exists": true,
+      "linear_time_us": 64.302,
+      "dict_time_us": 0.071,
+      "speedup_x": 908.2
+    },
+    {
+      "run": 15,
+      "target_id": "17878271668",
+      "position": "Late (index 1500)",
+      "exists": true,
+      "linear_time_us": 70.139,
+      "dict_time_us": 0.067,
+      "speedup_x": 1046.8
+    },
+    {
+      "run": 16,
+      "target_id": "26480204749",
+      "position": "Late (index 1600)",
+      "exists": true,
+      "linear_time_us": 70.581,
+      "dict_time_us": 0.066,
+      "speedup_x": 1063.0
+    },
+    {
+      "run": 17,
+      "target_id": "98632277447",
+      "position": "Late (index 1650)",
+      "exists": true,
+      "linear_time_us": 75.219,
+      "dict_time_us": 0.072,
+      "speedup_x": 1044.7
+    },
+    {
+      "run": 18,
+      "target_id": "37832903831",
+      "position": "Late (index 1682)",
+      "exists": true,
+      "linear_time_us": 75.235,
+      "dict_time_us": 0.066,
+      "speedup_x": 1146.9
+    },
+    {
+      "run": 19,
+      "target_id": "NOT_FOUND_90001",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 61.735,
+      "dict_time_us": 0.065,
+      "speedup_x": 949.8
+    },
+    {
+      "run": 20,
+      "target_id": "NOT_FOUND_90002",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 62.259,
+      "dict_time_us": 0.064,
+      "speedup_x": 966.8
+    },
+    {
+      "run": 21,
+      "target_id": "NOT_FOUND_90003",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 59.672,
+      "dict_time_us": 0.063,
+      "speedup_x": 947.2
+    },
+    {
+      "run": 22,
+      "target_id": "INVALID_TX_ABC",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 75.945,
+      "dict_time_us": 0.123,
+      "speedup_x": 615.4
+    },
+    {
+      "run": 23,
+      "target_id": "DUMMY_SMS_9999",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 68.038,
+      "dict_time_us": 0.073,
+      "speedup_x": 934.6
+    },
+    {
+      "run": 24,
+      "target_id": "UNKNOWN_TRANSACTION_ID",
+      "position": "Not Found (worst case O(n))",
+      "exists": false,
+      "linear_time_us": 59.007,
+      "dict_time_us": 0.063,
+      "speedup_x": 939.6
+    }
+  ]
+}
