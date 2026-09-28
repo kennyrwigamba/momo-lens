@@ -50,6 +50,44 @@ The database schema is structured in 5 core tables, featuring a Many-to-Many jun
 
 ## Database Setup & Execution
 
+## Transaction REST API (plain Python)
+
+The API uses only Python's standard library and stores records in
+`data/transactions.json` by default. Start it from the project root:
+
+```bash
+python -m api.app
+```
+
+It listens on `http://127.0.0.1:8000`. Set `MOMO_LENS_HOST`, `MOMO_LENS_PORT`,
+or `MOMO_LENS_DATA` to change the bind address, port, or JSON data-file path.
+The data file is created when the first record is written. Each transaction
+uses the nested JSON shape shown in `examples/complex_transaction.json`.
+
+| Method | Path | Result |
+|---|---|---|
+| GET | `/transactions` | List all transactions |
+| GET | `/transactions/{id}` | Retrieve one transaction |
+| POST | `/transactions` | Create a transaction (201; duplicate ID returns 409) |
+| PUT | `/transactions/{id}` | Replace a transaction (path ID must match body ID) |
+| DELETE | `/transactions/{id}` | Delete a transaction (204) |
+
+Example requests (the example file is a complete valid transaction):
+
+```bash
+curl http://127.0.0.1:8000/transactions
+curl http://127.0.0.1:8000/transactions/13947831685
+curl -X POST http://127.0.0.1:8000/transactions \
+  -H 'Content-Type: application/json' \
+  --data-binary @examples/complex_transaction.json
+```
+
+POST and PUT require a JSON object with `transaction_id`, `sender`,
+`receiver`, `amount`, `currency`, `fee`, `balance_after`, `tx_timestamp`,
+`status`, and `categories`. Invalid JSON or fields return 400; missing records
+return 404. Set `MOMO_LENS_DATA` to a temporary path when trying write requests
+so sample or project data is not altered.
+
 ### 1. Database Setup
 Execute the setup script in MySQL:
 
