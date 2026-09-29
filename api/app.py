@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from api.auth import check_auth
 from api.db import TransactionStore
 from api.schemas import validate_transaction
 
@@ -14,6 +15,20 @@ class TransactionHandler(BaseHTTPRequestHandler):
     """Serve CRUD operations for transactions as JSON."""
 
     store = TransactionStore(Path(os.environ.get("MOMO_LENS_DATA", "data/transactions.json")))
+
+    def _require_auth(self):
+        """Require valid Basic Authentication."""
+        if check_auth(self.headers):
+            return True
+
+        self.send_response(401)
+        self.send_header("WWW-Authenticate", 'Basic realm="MoMo Lens API"')
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        body = json.dumps({"error": "Authentication required"}).encode("utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+        return False
 
     def _send_json(self, status, payload=None):
         body = b"" if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -42,6 +57,8 @@ class TransactionHandler(BaseHTTPRequestHandler):
             raise ValueError("Request body must contain valid JSON") from exc
 
     def do_GET(self):
+        if not self._require_auth():
+            return
         transaction_id = self._transaction_id()
         if transaction_id == "collection":
             return self._send_json(200, self.store.list_all())
@@ -53,6 +70,8 @@ class TransactionHandler(BaseHTTPRequestHandler):
         self._send_json(200, transaction)
 
     def do_POST(self):
+        if not self._require_auth():
+            return
         if self._transaction_id() != "collection":
             return self._send_json(404, {"error": "Not found"})
         try:
@@ -66,6 +85,8 @@ class TransactionHandler(BaseHTTPRequestHandler):
         self._send_json(201, transaction)
 
     def do_PUT(self):
+        if not self._require_auth():
+            return
         transaction_id = self._transaction_id()
         if not transaction_id or transaction_id == "collection":
             return self._send_json(404, {"error": "Not found"})
@@ -82,6 +103,8 @@ class TransactionHandler(BaseHTTPRequestHandler):
         self._send_json(200, transaction)
 
     def do_DELETE(self):
+        if not self._require_auth():
+            return
         transaction_id = self._transaction_id()
         if not transaction_id or transaction_id == "collection":
             return self._send_json(404, {"error": "Not found"})
