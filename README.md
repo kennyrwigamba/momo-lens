@@ -13,8 +13,9 @@ MoMo Lens is a full-stack application that processes Mobile Money (MoMo) SMS tra
 
 | Name | GitHub | Role |
 |---|---|---|
-| Ishimwe Rwigamba Kenny Louange | [@kennyrwigamba](https://github.com/kennyrwigamba) | Database Architecture & SQL Implementation |
-| Maunice Akaliza | [@Akaliza-ux](https://github.com/Akaliza-ux) | ERD Design & JSON Modeling |
+| Ishimwe Rwigamba Kenny Louange | [@kennyrwigamba](https://github.com/kennyrwigamba) | 
+| Maunice Akaliza | [@Akaliza-ux](https://github.com/Akaliza-ux) | 
+| IBYISHAKA Jean Remy | [@IREMY250](https://github.com/IREMY250) | 
 
 ## System Architecture
 
@@ -49,6 +50,23 @@ The database schema is structured in 5 core tables, featuring a Many-to-Many jun
 | **AI Usage Log** | [`docs/ai_usage_log.md`](docs/ai_usage_log.md) | Transparent log of AI assistance and compliance statement |
 
 ## Database Setup & Execution
+
+### 1. Database Setup
+Execute the setup script in MySQL:
+
+```sql
+SOURCE database/database_setup.sql;
+```
+
+This creates the database `momo_lens_db`, all 5 normalized tables (`users`, `transaction_categories`, `transactions`, `transaction_category_map`, `system_logs`), sets up `CHECK` constraints and indexes, and inserts sample records.
+
+### 2. Verify CRUD & Analytical Queries
+Run the verification queries:
+
+```sql
+SOURCE database/crud_operations.sql;
+```
+
 
 ## Transaction REST API (plain Python)
 
@@ -87,19 +105,3 @@ POST and PUT require a JSON object with `transaction_id`, `sender`,
 `status`, and `categories`. Invalid JSON or fields return 400; missing records
 return 404. Set `MOMO_LENS_DATA` to a temporary path when trying write requests
 so sample or project data is not altered.
-
-### 1. Database Setup
-Execute the setup script in MySQL:
-
-```sql
-SOURCE database/database_setup.sql;
-```
-
-This creates the database `momo_lens_db`, all 5 normalized tables (`users`, `transaction_categories`, `transactions`, `transaction_category_map`, `system_logs`), sets up `CHECK` constraints and indexes, and inserts sample records.
-
-### 2. Verify CRUD & Analytical Queries
-Run the verification queries:
-
-```sql
-SOURCE database/crud_operations.sql;
-```
