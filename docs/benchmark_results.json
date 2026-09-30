@@ -1,0 +1,110 @@
+{
+  "dataset_size": 1683,
+  "ids_tested": 20,
+  "repeats_per_id": 200,
+  "avg_linear_us": 43.81,
+  "avg_dict_us": 0.1,
+  "speedup": 427.9,
+  "results": [
+    {
+      "id": "76662021700",
+      "linear_us": 0.15,
+      "dict_us": 0.07
+    },
+    {
+      "id": "sms_91",
+      "linear_us": 3.73,
+      "dict_us": 0.06
+    },
+    {
+      "id": "28563784569",
+      "linear_us": 9.61,
+      "dict_us": 0.08
+    },
+    {
+      "id": "sms_259",
+      "linear_us": 20.0,
+      "dict_us": 0.2
+    },
+    {
+      "id": "14574631016",
+      "linear_us": 23.62,
+      "dict_us": 0.09
+    },
+    {
+      "id": "sms_427",
+      "linear_us": 20.68,
+      "dict_us": 0.08
+    },
+    {
+      "id": "63310525007",
+      "linear_us": 32.64,
+      "dict_us": 0.34
+    },
+    {
+      "id": "sms_595",
+      "linear_us": 36.05,
+      "dict_us": 0.08
+    },
+    {
+      "id": "sms_679",
+      "linear_us": 40.62,
+      "dict_us": 0.08
+    },
+    {
+      "id": "18226776468",
+      "linear_us": 38.94,
+      "dict_us": 0.08
+    },
+    {
+      "id": "sms_849",
+      "linear_us": 40.7,
+      "dict_us": 0.08
+    },
+    {
+      "id": "sms_933",
+      "linear_us": 57.64,
+      "dict_us": 0.07
+    },
+    {
+      "id": "sms_1017",
+      "linear_us": 39.63,
+      "dict_us": 0.09
+    },
+    {
+      "id": "59905850736",
+      "linear_us": 53.16,
+      "dict_us": 0.07
+    },
+    {
+      "id": "sms_1185",
+      "linear_us": 56.08,
+      "dict_us": 0.07
+    },
+    {
+      "id": "79800269407",
+      "linear_us": 61.52,
+      "dict_us": 0.08
+    },
+    {
+      "id": "82106121513",
+      "linear_us": 81.27,
+      "dict_us": 0.09
+    },
+    {
+      "id": "58399013847",
+      "linear_us": 85.9,
+      "dict_us": 0.14
+    },
+    {
+      "id": "sms_1521",
+      "linear_us": 77.61,
+      "dict_us": 0.09
+    },
+    {
+      "id": "58861772799",
+      "linear_us": 96.67,
+      "dict_us": 0.09
+    }
+  ]
+}
