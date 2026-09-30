@@ -1,181 +1,145 @@
-# XML Parser for MoMo SMS dataset
-# Extracts financial transactions from modified_sms_v2.xml into simple Python dictionaries.
+"""Parse modified_sms_v2.xml into a list of transaction dictionaries"""
 
+import json
 import re
 from datetime import datetime
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
+RWF = r"(?:RWF|Rwf|FRW|Frw)"
 
-# Helper function to convert amount strings with commas to a clean float
-def clean_amount(amount_text):
-    if not amount_text:
+
+def clean_amount(text):
+    if not text:
         return 0.0
-    cleaned_text = amount_text.replace(",", "").strip()
     try:
-        return float(cleaned_text)
+        return float(text.replace(",", "").strip())
     except ValueError:
         return 0.0
 
 
-# Extract telecom transaction ID from SMS body, or fallback to sms_{index}
-def extract_id(body, index):
-    match = re.search(r"(?:TxId|Financial Transaction Id)\s*[:.]?\s*(\d+)", body, re.IGNORECASE)
-    if match:
-        return match.group(1)
-    return f"sms_{index}"
+def first_amount(body, pattern):
+    match = re.search(pattern, body, re.IGNORECASE)
+    return clean_amount(match.group(1)) if match else 0.0
 
 
-# Extract timestamp from SMS body or fall back to XML attributes
-def extract_timestamp(body, sms_node):
-    # Try finding timestamp in body (format: YYYY-MM-DD HH:MM:SS)
-    match = re.search(r"(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})", body)
-    if match:
-        return match.group(1)
-
-    # Fallback to XML date (epoch milliseconds)
-    date_milliseconds = sms_node.get("date", "")
-    if date_milliseconds and date_milliseconds.isdigit():
-        try:
-            return datetime.fromtimestamp(int(date_milliseconds) / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
-        except Exception:
-            pass
-
-    # Fallback to readable_date attribute
-    return sms_node.get("readable_date", "")
+def first_name(body, pattern, default):
+    match = re.search(pattern, body, re.IGNORECASE)
+    return match.group(1).strip() if match else default
 
 
-# Extract network transaction fee from SMS body
-def extract_fee(body):
-    match = re.search(r"Fee\s+(?:was|is|paid)?\s*[:.]?\s*([\d,]+)", body, re.IGNORECASE)
-    if match:
-        return clean_amount(match.group(1))
-    return 0.0
-
-
-# Extract account balance after the transaction
-def extract_balance(body):
-    match = re.search(r"(?:new balance|NEW BALANCE|balance is)\s*[:.]?\s*([\d,]+)", body, re.IGNORECASE)
-    if match:
-        return clean_amount(match.group(1))
-    return None
-
-
-# Parse an individual <sms> XML element into a transaction dictionary
-def parse_sms_record(sms_node, index):
-    body = sms_node.get("body", "").strip()
-    body_lower = body.lower()
-
-    # Extract common core fields
-    transaction_id = extract_id(body, index)
-    timestamp = extract_timestamp(body, sms_node)
-    fee = extract_fee(body)
-    balance_after = extract_balance(body)
-
+def classify_sms(body):
+    # MoMo texts use different templates. So,we read keywords in the body, then regex for amount and names
+    lower = body.lower()
     amount = 0.0
-    currency = "RWF"
     sender = "Unknown"
     receiver = "Unknown"
     transaction_type = "Other"
 
-    # 1. Non-financial OTP messages
-    if "one-time password" in body_lower or "otp" in body_lower:
-        transaction_type = "OTP"
-        sender = "MTN MoMo"
-        receiver = "Self"
+    if "one-time password" in lower or "otp" in lower:
+        return "OTP", amount, "MTN MoMo", "Self"
 
-    # 2. Agent Cash-Out (Withdrawal)
-    elif "withdrawn" in body_lower:
-        transaction_type = "Cash-Out"
-        amount_match = re.search(r"withdrawn\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        sender = "Self"
-        agent_match = re.search(r"via agent:\s*([A-Za-z\s]+)(?:\([^\)]+\))?", body)
-        receiver = agent_match.group(1).strip() if agent_match else "Agent"
+    if "withdrawn" in lower:
+        return (
+            "Cash-Out",
+            first_amount(body, r"withdrawn\s+([\d,]+)"),
+            "Self",
+            first_name(body, r"via agent:\s*([A-Za-z\s]+)(?:\([^\)]+\))?", "Agent"),
+        )
 
-    # 3. Received Money from another user
-    elif "received" in body_lower and "from" in body_lower:
-        transaction_type = "Received"
-        amount_match = re.search(r"received\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        sender_match = re.search(r"from\s+([A-Za-z\s]+)(?:\([^\)]+\))?", body)
-        sender = sender_match.group(1).strip() if sender_match else "Sender"
-        receiver = "Self"
+    if "received" in lower and "from" in lower:
+        return (
+            "Received",
+            first_amount(body, r"received\s+([\d,]+)"),
+            first_name(body, r"from\s+([A-Za-z\s]+)(?:\([^\)]+\))?", "Sender"),
+            "Self",
+        )
 
-    # 4. P2P Transfer (Transfer to someone else)
-    elif "transferred to" in body_lower or "transferred" in body_lower:
-        transaction_type = "Transfer"
-        amount_match = re.search(r"([\d,]+)\s*(?:RWF|Rwf|FRW|Frw)\s+transferred", body, re.IGNORECASE)
-        if not amount_match:
-            amount_match = re.search(r"transferred\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        receiver_match = re.search(r"transferred to\s+([A-Za-z\s]+)(?:\(([^\)]+)\))?", body)
-        receiver = receiver_match.group(1).strip() if receiver_match else "Recipient"
-        sender = "Self"
+    if "transferred to" in lower or "transferred" in lower:
+        amount = first_amount(body, rf"([\d,]+)\s*{RWF}\s+transferred")
+        if not amount:
+            amount = first_amount(body, r"transferred\s+([\d,]+)")
+        return (
+            "Transfer",
+            amount,
+            "Self",
+            first_name(body, r"transferred to\s+([A-Za-z\s]+)(?:\([^\)]+\))?", "Recipient"),
+        )
 
-    # 5. Bank Deposit or Agent Cash Deposit
-    elif "bank deposit" in body_lower or "cash deposit" in body_lower or "deposited" in body_lower:
-        transaction_type = "Deposit"
-        amount_match = re.search(r"(?:deposit of|deposited)\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        sender = "Bank / Agent"
-        receiver = "Self"
+    if "bank deposit" in lower or "cash deposit" in lower or "deposited" in lower:
+        return (
+            "Deposit",
+            first_amount(body, r"(?:deposit of|deposited)\s+([\d,]+)"),
+            "Bank / Agent",
+            "Self",
+        )
 
-    # 6. Airtime or Internet Bundle Purchase
-    elif "airtime" in body_lower or "umaze kugura" in body_lower:
-        transaction_type = "Airtime"
-        amount_match = re.search(r"([\d,]+)\s*(?:RWF|Rwf|FRW|Frw)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        sender = "Self"
-        receiver = "MTN Airtime / Bundle"
+    if "airtime" in lower or "umaze kugura" in lower:
+        return (
+            "Airtime",
+            first_amount(body, rf"([\d,]+)\s*{RWF}"),
+            "Self",
+            "MTN Airtime / Bundle",
+        )
 
-    # 7. Reversed Transaction
-    elif "reversed" in body_lower or "reversal" in body_lower:
-        transaction_type = "Reversal"
-        amount_match = re.search(r"([\d,]+)\s*(?:RWF|Rwf|FRW|Frw)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        sender = "MTN MoMo"
-        receiver = "Self"
+    if "reversed" in lower or "reversal" in lower:
+        return (
+            "Reversal",
+            first_amount(body, rf"([\d,]+)\s*{RWF}"),
+            "MTN MoMo",
+            "Self",
+        )
 
-    # 8. Merchant / Utility Payment
-    elif "payment of" in body_lower:
-        transaction_type = "Payment"
-        amount_match = re.search(r"payment of\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        receiver_match = re.search(r"to\s+([A-Za-z\s]+)(?:\s+\d+)?\s+has been completed", body)
-        receiver = receiver_match.group(1).strip() if receiver_match else "Merchant"
-        sender = "Self"
+    if "payment of" in lower:
+        return (
+            "Payment",
+            first_amount(body, r"payment of\s+([\d,]+)"),
+            "Self",
+            first_name(body, r"to\s+([A-Za-z\s]+)(?:\s+\d+)?\s+has been completed", "Merchant"),
+        )
 
-    # 9. Third-party direct payment
-    elif "transaction of" in body_lower:
-        transaction_type = "Payment"
-        amount_match = re.search(r"transaction of\s+([\d,]+)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
-        receiver_match = re.search(r"by\s+([A-Z0-9\s]+?)\s+on your", body)
-        receiver = receiver_match.group(1).strip() if receiver_match else "Merchant"
-        sender = "Self"
+    if "transaction of" in lower:
+        return (
+            "Payment",
+            first_amount(body, r"transaction of\s+([\d,]+)"),
+            "Self",
+            first_name(body, r"by\s+([A-Z0-9\s]+?)\s+on your", "Merchant"),
+        )
 
-    # 10. General amount fallback for any other format
+    amount = first_amount(body, rf"([\d,]+)\s*{RWF}")
+    return transaction_type, amount, sender, receiver
+
+
+def parse_sms_record(sms_node, index):
+    body = sms_node.get("body", "").strip()
+    transaction_type, amount, sender, receiver = classify_sms(body)
+
+    tx_id = re.search(r"(?:TxId|Financial Transaction Id)\s*[:.]?\s*(\d+)", body, re.IGNORECASE)
+    record_id = tx_id.group(1) if tx_id else f"sms_{index}"
+
+    time_match = re.search(r"(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})", body)
+    if time_match:
+        timestamp = time_match.group(1)
+    elif sms_node.get("date", "").isdigit():
+        try:
+            timestamp = datetime.fromtimestamp(int(sms_node.get("date")) / 1000).strftime("%Y-%m-%d %H:%M:%S")
+        except (OSError, ValueError):
+            timestamp = sms_node.get("readable_date", "")
     else:
-        amount_match = re.search(r"([\d,]+)\s*(?:RWF|Rwf|FRW|Frw)", body, re.IGNORECASE)
-        if amount_match:
-            amount = clean_amount(amount_match.group(1))
+        timestamp = sms_node.get("readable_date", "")
+
+    fee_match = re.search(r"Fee\s+(?:was|is|paid)?\s*[:.]?\s*([\d,]+)", body, re.IGNORECASE)
+    balance_match = re.search(
+        r"(?:new balance|NEW BALANCE|balance is)\s*[:.]?\s*([\d,]+)", body, re.IGNORECASE
+    )
 
     return {
-        "id": transaction_id,
+        "id": record_id,
         "transaction_type": transaction_type,
         "amount": amount,
-        "currency": currency,
-        "fee": fee,
-        "balance_after": balance_after,
+        "currency": "RWF",
+        "fee": clean_amount(fee_match.group(1)) if fee_match else 0.0,
+        "balance_after": clean_amount(balance_match.group(1)) if balance_match else None,
         "sender": sender,
         "receiver": receiver,
         "timestamp": timestamp,
@@ -183,34 +147,42 @@ def parse_sms_record(sms_node, index):
     }
 
 
-# Parse the XML SMS file and return a list of transactions
 def parse_sms_xml(file_path, include_otp=False):
     path = Path(file_path)
     if not path.is_file():
-        raise FileNotFoundError(f"SMS XML file not found at: {path}")
+        raise FileNotFoundError(f"SMS XML file not found: {path}")
 
-    tree = ET.parse(path)
-    root = tree.getroot()
-
-    transactions = []
-    for index, sms_node in enumerate(root, start=1):
+    records = []
+    for index, sms_node in enumerate(ET.parse(path).getroot(), start=1):
         record = parse_sms_record(sms_node, index)
-        # Skip OTP messages if include_otp is False
-        if not include_otp and record["transaction_type"] == "OTP":
-            continue
-        transactions.append(record)
+        if include_otp or record["transaction_type"] != "OTP":
+            records.append(record)
+    return records
 
-    return transactions
+
+def write_transactions_json(records, out_path):
+    """Save parsed records to JSON"""
+    payload = []
+    for record in records:
+        row = dict(record)
+        row["transaction_id"] = row["id"]
+        payload.append(row)
+
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return len(payload), out_path
 
 
 if __name__ == "__main__":
-    sample_file = Path(__file__).resolve().parent.parent / "modified_sms_v2.xml"
-    print(f"Parsing {sample_file}...")
-    transactions = parse_sms_xml(sample_file)
-    print(f"Successfully parsed {len(transactions)} transactions.")
+    project_root = Path(__file__).resolve().parent.parent
+    xml_file = project_root / "modified_sms_v2.xml"
+    out_file = project_root / "data" / "transactions.json"
 
+    transactions = parse_sms_xml(xml_file)
+    count, path = write_transactions_json(transactions, out_file)
+
+    print(f"Parsed {count} transactions from {xml_file.name}")
+    print(f"Wrote {path}")
     if transactions:
-        print("\nFirst transaction sample:")
-        first_transaction = transactions[0]
-        for key, value in first_transaction.items():
-            print(f"  {key}: {value}")
+        print("Sample:", transactions[0])
