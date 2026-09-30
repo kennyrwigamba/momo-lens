@@ -35,8 +35,12 @@ class TransactionStore:
             return self._read()
 
     def get(self, transaction_id):
+        target = str(transaction_id)
         with self._lock:
-            return next((item for item in self._read() if item["transaction_id"] == transaction_id), None)
+            for item in self._read():
+                if str(item.get("transaction_id", "")) == target or str(item.get("id", "")) == target:
+                    return item
+            return None
 
     def create(self, transaction):
         with self._lock:

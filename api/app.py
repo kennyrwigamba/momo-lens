@@ -10,11 +10,14 @@ from api.auth import check_auth
 from api.db import TransactionStore
 from api.schemas import validate_transaction
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_DATA = PROJECT_ROOT / "data" / "transactions.json"
+
 
 class TransactionHandler(BaseHTTPRequestHandler):
     """Serve CRUD operations for transactions as JSON."""
 
-    store = TransactionStore(Path(os.environ.get("MOMO_LENS_DATA", "data/transactions.json")))
+    store = TransactionStore(Path(os.environ.get("MOMO_LENS_DATA", DEFAULT_DATA)))
 
     def _require_auth(self):
         """Require valid Basic Authentication."""
@@ -119,6 +122,9 @@ class TransactionHandler(BaseHTTPRequestHandler):
 def main():
     host = os.environ.get("MOMO_LENS_HOST", "127.0.0.1")
     port = int(os.environ.get("MOMO_LENS_PORT", "8000"))
+    store = TransactionHandler.store
+    count = len(store.list_all())
+    print("Data file: %s (%s records)" % (store.path.resolve(), count))
     server = ThreadingHTTPServer((host, port), TransactionHandler)
     print("MoMo Lens API listening on http://%s:%s" % (host, port))
     try:

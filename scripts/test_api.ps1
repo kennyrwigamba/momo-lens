@@ -1,27 +1,24 @@
+$root = Split-Path -Parent $PSScriptRoot
 $baseUrl = "http://127.0.0.1:8000"
-$username = "admin"
-$password = "change_this_password"
+$sample = "$root/examples/complex_transaction.json"
 
-Write-Host "=== GET: Authenticated request ==="
-curl.exe -i -u "${username}:${password}" `
-    "$baseUrl/transactions"
+Write-Host "=== GET /transactions (authenticated) ==="
+curl.exe -i -u admin:password "$baseUrl/transactions/76662021700"
 
-Write-Host "`n=== GET: Unauthorized request ==="
-curl.exe -i `
-    "$baseUrl/transactions"
+Write-Host "`n=== GET /transactions (unauthorized) ==="
+curl.exe -i "$baseUrl/transactions"
 
-Write-Host "`n=== POST: Create transaction ==="
-curl.exe -i -u "${username}:${password}" `
+Write-Host "`n=== POST /transactions ==="
+curl.exe -i -u admin:password `
     -X POST "$baseUrl/transactions" `
     -H "Content-Type: application/json" `
-    --data-binary "@test_transaction.json"
+    --data-binary "@$sample"
 
-Write-Host "`n=== PUT: Update transaction ==="
-curl.exe -i -u "${username}:${password}" `
-    -X PUT "$baseUrl/transactions/TEST001" `
+Write-Host "`n=== PUT /transactions/13947830000 ==="
+curl.exe -i -u admin:password `
+    -X PUT "$baseUrl/transactions/13947830000" `
     -H "Content-Type: application/json" `
-    --data-binary "@test_transaction_updated.json"
+    --data-binary "@$sample"
 
-Write-Host "`n=== DELETE: Delete transaction ==="
-curl.exe -i -u "${username}:${password}" `
-    -X DELETE "$baseUrl/transactions/TEST001"
+Write-Host "`n=== DELETE /transactions/13947830000 ==="
+curl.exe -i -u admin:password -X DELETE "$baseUrl/transactions/13947830000"
